@@ -1,0 +1,8 @@
+---
+BasedOnStyle: Google
+ColumnLimit: '80'
+TabWidth: '2'
+IndentWidth: '2'
+UseTab: ForContinuationAndIndentation
+
+...
