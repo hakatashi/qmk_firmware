@@ -64,9 +64,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #    define RGB_MATRIX_KEYPRESSES // reacts to keypresses
 // #   define RGB_MATRIX_KEYRELEASES // reacts to keyreleases (instead of keypresses)
 // #   define RGB_DISABLE_AFTER_TIMEOUT 0 // number of ticks to wait until disabling effects
+#    define RGB_MATRIX_LED_FLUSH_LIMIT 16
 #    define RGB_MATRIX_MAXIMUM_BRIGHTNESS 150
-#    define RGB_MATRIX_HUE_STEP 8
-#    define RGB_MATRIX_SAT_STEP 8
-#    define RGB_MATRIX_VAL_STEP 8
+#    define RGB_MATRIX_HUE_STEP 10
+#    define RGB_MATRIX_SAT_STEP 17
+#    define RGB_MATRIX_VAL_STEP 17
 #    define RGB_MATRIX_SPD_STEP 10
 #endif

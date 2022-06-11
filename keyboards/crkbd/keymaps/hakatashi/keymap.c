@@ -55,59 +55,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 				RGB_SAD, RGB_VAD, KC_NO, KC_F24, KC_F23, KC_F20, KC_F19, KC_F16, KC_F15,
 				RESET, KC_LCTL, _______, KC_SPC, KC_ENT, _______, KC_LALT)};
 
-#ifdef RGB_MATRIX_ENABLE
 
-extern led_config_t g_led_config;
-
-void set_color(int index, uint8_t hsvred, uint8_t hsvgreen, uint8_t hsvblue) {
-	HSV hsv = (HSV){hsvred, hsvgreen, hsvblue};
-	if (hsv.v > rgb_matrix_get_val()) {
-		hsv.v = rgb_matrix_get_val();
-	}
-	RGB rgb = hsv_to_rgb(hsv);
-	rgb_matrix_set_color(index, rgb.r, rgb.g, rgb.b);
+void keyboard_post_init_user(void) {
+#if defined(RGBLIGHT_ENABLE) || defined(RGB_MATRIX_ENABLE)
+	rgb_matrix_mode_noeeprom(RGB_MATRIX_CUSTOM_hakatashi_effect);
+	rgb_matrix_sethsv_noeeprom(HSV_OFF);
+#endif
 }
-
-void set_color_all(uint8_t hsvred, uint8_t hsvgreen, uint8_t hsvblue) {
-	HSV hsv = (HSV){hsvred, hsvgreen, hsvblue};
-	if (hsv.v > rgb_matrix_get_val()) {
-		hsv.v = rgb_matrix_get_val();
-	}
-	RGB rgb = hsv_to_rgb(hsv);
-	rgb_matrix_set_color_all(rgb.r, rgb.g, rgb.b);
-}
-
-void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
-	if (rgb_matrix_get_mode() != 1) {
-		return;
-	}
-
-	rgb_matrix_set_color_all(RGB_OFF);
-
-	for (uint8_t c = 0; c < MATRIX_COLS; c++) {
-		for (uint8_t r = 0; r < MATRIX_ROWS; r++) {
-			if (matrix_is_on(r, c)) {
-				set_color(g_led_config.matrix_co[r][c], HSV_RED);
-			}
-		}
-	}
-
-	switch (get_highest_layer(layer_state | default_layer_state)) {
-		case _RAISE:
-			set_color_all(HSV_RED);
-			break;
-		case _LOWER:
-			set_color_all(HSV_BLUE);
-			break;
-		case _ADJUST:
-			set_color_all(HSV_WHITE);
-			break;
-		default:
-			break;
-	}
-}
-
-#endif  // RGB_MATRIX_ENABLE
 
 #ifdef OLED_ENABLE
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
