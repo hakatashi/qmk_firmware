@@ -20,11 +20,11 @@ typedef struct PACKED {
 	uint8_t is_processed;
 } Circle;
 
-static Circle circles[] = {{0, _BASE, 0, 0, 0, 0},
-													 {0, _BASE, 0, 0, 0, 0},
-													 {0, _BASE, 0, 0, 0, 0},
-													 {0, _BASE, 0, 0, 0, 0},
-													 {0, _BASE, 0, 0, 0, 0}};
+static Circle circles[] = {
+		{0, _BASE, 0, 0, 0, 0}, {0, _BASE, 0, 0, 0, 0}, {0, _BASE, 0, 0, 0, 0},
+		{0, _BASE, 0, 0, 0, 0}, {0, _BASE, 0, 0, 0, 0}, {0, _BASE, 0, 0, 0, 0},
+		{0, _BASE, 0, 0, 0, 0}, {0, _BASE, 0, 0, 0, 0}, {0, _BASE, 0, 0, 0, 0},
+		{0, _BASE, 0, 0, 0, 0}, {0, _BASE, 0, 0, 0, 0}};
 
 static uint16_t newest_circle_id;
 
@@ -102,30 +102,48 @@ static bool hakatashi_effect_complex_run(effect_params_t* params) {
 	RGB_MATRIX_USE_LIMITS(led_min, led_max);
 
 	uint8_t new_color = get_highest_layer(layer_state | default_layer_state);
+	uint8_t changed_key = 0;  // 0 => both, 1 => left, 2 => right
 
 	switch (new_color) {
 		case _BASE:
-			if (current_color != _BASE) {
-				add_circle(_BASE, 0, 21, 6);
+			if (current_color == _RAISE) {
+				changed_key = 2;
+			} else if (current_color == _LOWER) {
+				changed_key = 1;
 			}
 			break;
 		case _RAISE:
-			if (current_color != _RAISE) {
-				add_circle(_RAISE, 0, 21, 6);
+			if (current_color == _BASE) {
+				changed_key = 2;
+			} else if (current_color == _ADJUST) {
+				changed_key = 1;
 			}
 			break;
 		case _LOWER:
-			if (current_color != _LOWER) {
-				add_circle(_LOWER, 0, 9, 6);
+			if (current_color == _BASE) {
+				changed_key = 1;
+			} else if (current_color == _ADJUST) {
+				changed_key = 2;
 			}
 			break;
 		case _ADJUST:
-			if (current_color != _ADJUST) {
-				add_circle(_ADJUST, 0, 21, 6);
+			if (current_color == _RAISE) {
+				changed_key = 1;
+			} else if (current_color == _LOWER) {
+				changed_key = 2;
 			}
 			break;
 		default:
 			break;
+	}
+
+	if (current_color != new_color) {
+		if (changed_key == 0 || changed_key == 1) {
+			add_circle(new_color, 0, 9, 6);
+		}
+		if (changed_key == 0 || changed_key == 2) {
+			add_circle(new_color, 0, 21, 6);
+		}
 	}
 
 	current_color = new_color;
