@@ -81,10 +81,13 @@ static void add_circle(uint8_t color, uint8_t size, uint8_t center_x,
 											 uint8_t center_y) {
 	uint8_t max_size = 0;
 	uint8_t max_circle = 0;
-	for (uint8_t i = 0; i < sizeof(circles) / sizeof(circles[0]); i++) {
-		if (max_size < circles[i].size) {
-			max_size = circles[i].size;
-			max_circle = i;
+	uint8_t max_circle_id = 0;
+	for (uint8_t j = 0; j < sizeof(circles) / sizeof(circles[0]); j++) {
+		if (max_size < circles[j].size ||
+				(max_size == circles[j].size && max_circle_id > circles[j].id)) {
+			max_size = circles[j].size;
+			max_circle_id = circles[j].id;
+			max_circle = j;
 		}
 	}
 
@@ -101,6 +104,11 @@ static bool hakatashi_effect_complex_run(effect_params_t* params) {
 	uint8_t new_color = get_highest_layer(layer_state | default_layer_state);
 
 	switch (new_color) {
+		case _BASE:
+			if (current_color != _BASE) {
+				add_circle(_BASE, 0, 21, 6);
+			}
+			break;
 		case _RAISE:
 			if (current_color != _RAISE) {
 				add_circle(_RAISE, 0, 21, 6);
@@ -144,8 +152,7 @@ static bool hakatashi_effect_complex_run(effect_params_t* params) {
 		for (uint8_t j = 0; j < sizeof(circles) / sizeof(circles[0]); j++) {
 			if (circles[j].is_processed == 0) {
 				if (max_size < circles[j].size ||
-						(max_size == circles[j].size &&
-						 max_circle_id > circles[j].id)) {
+						(max_size == circles[j].size && max_circle_id > circles[j].id)) {
 					max_size = circles[j].size;
 					max_circle_id = circles[j].id;
 					max_circle = j;
@@ -172,6 +179,9 @@ static bool hakatashi_effect_complex_run(effect_params_t* params) {
 
 				if (dist < c / 15) {
 					switch (circles[max_circle].color) {
+						case _BASE:
+							key_colors[led] = (HSV){HSV_OFF};
+							break;
 						case _RAISE:
 							key_colors[led] = (HSV){HSV_RED};
 							break;
@@ -191,17 +201,9 @@ static bool hakatashi_effect_complex_run(effect_params_t* params) {
 		circles[max_circle].is_processed = 1;
 	}
 
-	for (uint8_t c = 0; c < MATRIX_COLS; c++) {
-		for (uint8_t r = 0; r < MATRIX_ROWS; r++) {
-			uint8_t led = g_led_config.matrix_co[r][c];
-
-			if (led == NO_LED) {
-				continue;
-			}
-
-			HSV color = key_colors[led];
-			set_color(led, color.h, color.s, color.v);
-		}
+	for (uint8_t i = led_min; i <= led_max; i++) {
+		HSV color = key_colors[i];
+		set_color(i, color.h, color.s, color.v);
 	}
 
 	return rgb_matrix_check_finished_leds(led_max);
