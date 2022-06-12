@@ -16,14 +16,17 @@ typedef struct PACKED {
 	uint8_t color;
 	uint8_t center_x;
 	uint8_t center_y;
+	uint16_t id;
 	uint8_t is_processed;
 } Circle;
 
-static Circle circles[] = {{0, _BASE, 0, 0, 0},
-													 {0, _BASE, 0, 0, 0},
-													 {0, _BASE, 0, 0, 0},
-													 {0, _BASE, 0, 0, 0},
-													 {0, _BASE, 0, 0, 0}};
+static Circle circles[] = {{0, _BASE, 0, 0, 0, 0},
+													 {0, _BASE, 0, 0, 0, 0},
+													 {0, _BASE, 0, 0, 0, 0},
+													 {0, _BASE, 0, 0, 0, 0},
+													 {0, _BASE, 0, 0, 0, 0}};
+
+static uint16_t newest_circle_id;
 
 static uint8_t current_color = _BASE;
 
@@ -68,8 +71,10 @@ static void hakatashi_effect_complex_init(effect_params_t* params) {
 		circles[i].center_x = 0;
 		circles[i].center_y = 0;
 		circles[i].is_processed = 0;
+		circles[i].id = 0;
 	}
 	current_color = _BASE;
+	newest_circle_id = 0;
 }
 
 static void add_circle(uint8_t color, uint8_t size, uint8_t center_x,
@@ -87,6 +92,7 @@ static void add_circle(uint8_t color, uint8_t size, uint8_t center_x,
 	circles[max_circle].size = size;
 	circles[max_circle].center_x = center_x;
 	circles[max_circle].center_y = center_y;
+	circles[max_circle].id = ++newest_circle_id;
 }
 
 static bool hakatashi_effect_complex_run(effect_params_t* params) {
@@ -134,10 +140,16 @@ static bool hakatashi_effect_complex_run(effect_params_t* params) {
 	for (uint8_t i = 0; i < sizeof(circles) / sizeof(circles[0]); i++) {
 		uint8_t max_size = 0;
 		uint8_t max_circle = 0;
+		uint8_t max_circle_id = 0;
 		for (uint8_t j = 0; j < sizeof(circles) / sizeof(circles[0]); j++) {
-			if (circles[j].is_processed == 0 && max_size < circles[j].size) {
-				max_size = circles[j].size;
-				max_circle = j;
+			if (circles[j].is_processed == 0) {
+				if (max_size < circles[j].size ||
+						(max_size == circles[j].size &&
+						 max_circle_id > circles[j].id)) {
+					max_size = circles[j].size;
+					max_circle_id = circles[j].id;
+					max_circle = j;
+				}
 			}
 		}
 
