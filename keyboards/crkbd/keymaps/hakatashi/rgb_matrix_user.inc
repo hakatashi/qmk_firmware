@@ -11,13 +11,17 @@ enum layer_names {
 	_ADJUST,
 };
 
-static uint8_t circle_size;
-static uint8_t circle_color;
-static uint8_t circle_center_x;
-static uint8_t circle_center_y;
+typedef struct PACKED {
+	uint8_t size;
+	uint8_t color;
+	uint8_t center_x;
+	uint8_t center_y;
+} Circle;
+
+static Circle circle;
 
 void set_color(int index, uint8_t hsvred, uint8_t hsvgreen, uint8_t hsvblue) {
-	HSV hsv = (HSV){hsvred, hsvgreen, hsvblue};
+	HSV hsv = {hsvred, hsvgreen, hsvblue};
 	if (hsv.v > rgb_matrix_get_val()) {
 		hsv.v = rgb_matrix_get_val();
 	}
@@ -26,7 +30,7 @@ void set_color(int index, uint8_t hsvred, uint8_t hsvgreen, uint8_t hsvblue) {
 }
 
 void set_color_all(uint8_t hsvred, uint8_t hsvgreen, uint8_t hsvblue) {
-	HSV hsv = (HSV){hsvred, hsvgreen, hsvblue};
+	HSV hsv = {hsvred, hsvgreen, hsvblue};
 	if (hsv.v > rgb_matrix_get_val()) {
 		hsv.v = rgb_matrix_get_val();
 	}
@@ -51,10 +55,10 @@ void get_key_location(uint8_t r, uint8_t c, uint8_t* x, uint8_t* y) {
 }
 
 static void hakatashi_effect_complex_init(effect_params_t* params) {
-	circle_size = 0;
-	circle_color = _BASE;
-	circle_center_x = 0;
-	circle_center_y = 0;
+	circle.size = 0;
+	circle.color = _BASE;
+	circle.center_x = 0;
+	circle.center_y = 0;
 }
 
 static bool hakatashi_effect_complex_run(effect_params_t* params) {
@@ -62,37 +66,37 @@ static bool hakatashi_effect_complex_run(effect_params_t* params) {
 
 	switch (get_highest_layer(layer_state | default_layer_state)) {
 		case _RAISE:
-			if (circle_color != _RAISE) {
-				circle_color = _RAISE;
-				circle_size = 0;
-				circle_center_x = 21;
-				circle_center_y = 6;
+			if (circle.color != _RAISE) {
+				circle.color = _RAISE;
+				circle.size = 0;
+				circle.center_x = 21;
+				circle.center_y = 6;
 			}
 			break;
 		case _LOWER:
-			if (circle_color != _LOWER) {
-				circle_color = _LOWER;
-				circle_size = 0;
-				circle_center_x = 9;
-				circle_center_y = 6;
+			if (circle.color != _LOWER) {
+				circle.color = _LOWER;
+				circle.size = 0;
+				circle.center_x = 9;
+				circle.center_y = 6;
 			}
 			break;
 		case _ADJUST:
-			if (circle_color != _ADJUST) {
-				circle_color = _ADJUST;
-				circle_size = 0;
-				circle_center_x = 21;
-				circle_center_y = 6;
+			if (circle.color != _ADJUST) {
+				circle.color = _ADJUST;
+				circle.size = 0;
+				circle.center_x = 21;
+				circle.center_y = 6;
 			}
 			break;
 		default:
-			circle_color = _BASE;
-			circle_size = 0;
+			circle.color = _BASE;
+			circle.size = 0;
 			break;
 	}
 
-	if (circle_color != _BASE && circle_size < 0xff) {
-		circle_size++;
+	if (circle.color != _BASE && circle.size < 0xff) {
+		circle.size++;
 	}
 
 	for (uint8_t c = 0; c < MATRIX_COLS; c++) {
@@ -101,13 +105,13 @@ static bool hakatashi_effect_complex_run(effect_params_t* params) {
 			uint8_t x, y;
 			get_key_location(r, c, &x, &y);
 
-			uint16_t dx = (uint16_t)x - (uint16_t)circle_center_x;
-			uint16_t dy = (uint16_t)y - (uint16_t)circle_center_y;
+			uint16_t dx = (uint16_t)x - (uint16_t)circle.center_x;
+			uint16_t dy = (uint16_t)y - (uint16_t)circle.center_y;
 			uint16_t dist = dx * dx + dy * dy;
-			uint16_t c = (uint16_t)circle_size * (uint16_t)circle_size;
+			uint16_t c = (uint16_t)circle.size * (uint16_t)circle.size;
 
 			if (dist < c / 15) {
-				switch(circle_color) {
+				switch(circle.color) {
 					case _RAISE:
 						set_color(led, HSV_RED);
 						break;
